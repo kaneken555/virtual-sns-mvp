@@ -1,0 +1,53 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+env/
+venv/
+.env
+.env.local
+*.sqlite3
+
+# ===== Node / Frontend =====
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== Docker / Compose =====
+*.pid
+*.log
+.dockerignore
+docker-compose.override.yml
+# キャッシュボリューム・一時ファイル
+*.db
+*.pid
+tmp/
+__pycache__/
+.mypy_cache/
+pytest_cache/
+
+# ===== Editor / OS =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ===== Misc =====
+# 仮想環境・依存管理
+.poetry/
+.pdm.toml
+Pipfile
+Pipfile.lock
+poetry.lock
+
+# ===== Optional =====
+# React / Vite
+*.local
+.cache/
