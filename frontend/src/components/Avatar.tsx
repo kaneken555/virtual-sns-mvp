@@ -11,9 +11,9 @@ interface AvatarProps {
 }
 
 const sizeClasses: Record<AvatarSize, string> = {
-  sm: "w-8 h-8 text-base",
-  md: "w-10 h-10 text-xl",
-  lg: "w-12 h-12 text-2xl",
+  sm: "avatar avatar-sm",
+  md: "avatar avatar-md",
+  lg: "avatar avatar-lg",
 };
 
 /**
@@ -23,11 +23,11 @@ const sizeClasses: Record<AvatarSize, string> = {
 export default function Avatar({ color, name, emoji, size = "md" }: AvatarProps) {
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full flex items-center justify-center flex-shrink-0`}
+      className={sizeClasses[size]}
       style={{ backgroundColor: color }}
       title={name}
     >
-      <span className="leading-none">{emoji}</span>
+      <span style={{ lineHeight: "1" }}>{emoji}</span>
     </div>
   );
 }
