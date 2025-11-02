@@ -5,3 +5,8 @@ redis
 openai
 python-dotenv
 requests
+SQLAlchemy>=2.0
+psycopg[binary]
+alembic
+sse-starlette
+redis>=5

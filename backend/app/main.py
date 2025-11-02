@@ -1,107 +1,97 @@
 # backend/app/main.py
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, Depends, HTTPException, Header, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
 import os
-from .workers.tasks import generate_reply
+import asyncio
 
+from .core.config import settings
+from .api.deps import get_db
+from .schemas.post import PostCreate, PostOut
+from .schemas.reply import ReplyOut, InternalReplyIn
+from .repository.post_repo import create_post as repo_create_post, list_posts as repo_list_posts
+from .repository.reply_repo import create_reply as repo_create_reply
+from .workers.tasks import generate_reply
+from .models import Post, Reply, Base
+from .services.bus import publish_reply
+from .db.session import engine
+
+# ✅ まずアプリを作る
 app = FastAPI(title="Virtual SNS API")
 
-# ---- CORS設定 ----
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)  # ←暫定：テーブル自動作成
+
+# ✅ 次にミドルウェア
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # MVP段階では全許可でOK
+    allow_origins=settings.CORS_ORIGINS.split(",") if settings.CORS_ORIGINS else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---- メモリ上の簡易データストア ----
-POSTS = []
-REPLIES = []
-POST_ID_SEQ = 1
-REPLY_ID_SEQ = 1
+# ✅ 最後にルーター登録（app作成の後）
+from .api.sse import router as sse_router
+app.include_router(sse_router)
+
 INTERNAL_SECRET = os.getenv("INTERNAL_SECRET", "dev-secret")
 
-# ---- スキーマ ----
-class PostRequest(BaseModel):
-    text: str
 
-class ReplyOut(BaseModel):
-    id: int
-    post_id: int
-    text: str
-    ai_user: str
-    created_at: str
-
-class PostOut(BaseModel):
-    id: int
-    text: str
-    created_at: str
-    replies: List[ReplyOut] = []
-
-class InternalReplyIn(BaseModel):
-    post_id: int
-    text: str
-    ai_user: str = "ai_user"
-
-# ---- ヘルスチェック ----
 @app.get("/health")
-def health_check():
+def health():
     return {"status": "ok"}
 
-# ---- 投稿作成 ----
 @app.post("/posts", response_model=PostOut)
-def create_post(req: PostRequest):
-    global POST_ID_SEQ
-    post = {
-        "id": POST_ID_SEQ,
-        "text": req.text,
-        "created_at": datetime.utcnow().isoformat(),
-    }
-    POSTS.append(post)
-    POST_ID_SEQ += 1
+def create_post(req: PostCreate, db: Session = Depends(get_db)):
+    post = repo_create_post(db, text=req.text)
+    generate_reply.delay(post.id, req.text)
+    return PostOut(
+        id=post.id, text=post.text, created_at=str(post.created_at), replies=[]
+    )
 
-    # Celeryに非同期で返信生成タスクを投げる
-    generate_reply.delay(post["id"], req.text)
-
-    return {**post, "replies": []}
-
-# ---- 投稿一覧 ----
 @app.get("/posts", response_model=List[PostOut])
-def list_posts():
-    def to_out(p):
-        rs = [r for r in REPLIES if r["post_id"] == p["id"]]
-        rs = sorted(rs, key=lambda r: r["created_at"])
-        return {**p, "replies": rs}
-    return [
-        to_out(p)
-        for p in sorted(POSTS, key=lambda x: x["created_at"], reverse=True)
-    ]
+def list_posts(db: Session = Depends(get_db)):
+    posts: list[Post] = repo_list_posts(db)
+    out: list[PostOut] = []
+    for p in posts:
+        replies = [
+            ReplyOut(
+                id=r.id, post_id=r.post_id, text=r.text, ai_user=r.ai_user, created_at=str(r.created_at)
+            )
+            for r in sorted(p.replies, key=lambda x: x.created_at)
+        ]
+        out.append(PostOut(id=p.id, text=p.text, created_at=str(p.created_at), replies=replies))
+    return out
 
-# ---- Workerからの内部返信登録 ----
 @app.post("/internal/replies", response_model=ReplyOut)
-def register_reply(
+async def register_reply(
     body: InternalReplyIn,
-    x_internal_secret: Optional[str] = Header(None)
+    background_tasks: BackgroundTasks,
+    x_internal_secret: Optional[str] = Header(None),
+    db: Session = Depends(get_db),
 ):
     if x_internal_secret != INTERNAL_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    target = next((p for p in POSTS if p["id"] == body.post_id), None)
-    if not target:
+    # Post存在確認
+    exists = db.get(Post, body.post_id)
+    if not exists:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    global REPLY_ID_SEQ
-    reply = {
-        "id": REPLY_ID_SEQ,
-        "post_id": body.post_id,
-        "text": body.text,
-        "ai_user": body.ai_user,
-        "created_at": datetime.utcnow().isoformat(),
+    r = repo_create_reply(db, post_id=body.post_id, text=body.text, ai_user=body.ai_user)
+
+    # SSE へ通知（バックグラウンドタスクで投げる）
+    message = {
+        "type": "reply",
+        "post_id": r.post_id,
+        "reply": {
+            "id": r.id, "post_id": r.post_id, "text": r.text,
+            "ai_user": r.ai_user, "created_at": str(r.created_at)
+        }
     }
-    REPLIES.append(reply)
-    REPLY_ID_SEQ += 1
-    return reply
+    background_tasks.add_task(publish_reply, message)
+
+    return ReplyOut(id=r.id, post_id=r.post_id, text=r.text, ai_user=r.ai_user, created_at=str(r.created_at))
