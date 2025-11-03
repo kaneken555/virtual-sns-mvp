@@ -4,6 +4,8 @@ import PostCard from "../components/PostCard";
 import { useTimeline } from "../features/posts/useTimeline";
 import { useSSE } from "../hooks/useSSE";
 import type { Post, Reply } from "../types";
+import { Sparkles } from "lucide-react";
+import ThreeColumnLayout from "../layouts/ThreeColumnLayout";
 
 export default function TimelinePage() {
   const { posts, loading, error, reload } = useTimeline(5000); // フォールバック用にポーリング残す
@@ -21,20 +23,54 @@ export default function TimelinePage() {
   useSSE(onReply);
 
   return (
-    <div className="max-w-xl mx-auto p-4">
-      <h1 className="text-xl font-bold mb-4">Virtual SNS</h1>
-      <div id="tl-cache" style={{ display: "none" }} />
-      <PostComposer onPosted={reload} />
+    <ThreeColumnLayout>
+      <div className="timeline-container">
+        <div id="tl-cache" style={{ display: "none" }} />
 
-      {loading && <div>読み込み中…</div>}
-      {error && <div className="text-red-600">{error}</div>}
+        {/* ヘッダー（固定） */}
+        <header className="timeline-header">
+          <h1 className="timeline-title">ホーム</h1>
+          <button className="icon-button">
+            <Sparkles size={20} />
+          </button>
+        </header>
 
-      {posts.map((p) => (
-        <LivePost key={p.id} initial={p} />
-      ))}
+        {/* 新規投稿エリア（30%） */}
+        <div className="new-post-area">
+          <PostComposer onPosted={reload} />
+        </div>
 
-      {!loading && posts.length === 0 && <div>投稿がありません</div>}
-    </div>
+        {/* 既存投稿エリア（70%） */}
+        <div className="existing-posts-area">
+          {/* ローディング */}
+          {loading && (
+            <div className="loading-message">
+              読み込み中…
+            </div>
+          )}
+
+          {/* エラー表示 */}
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+
+          {/* タイムライン */}
+          {posts.map((p) => (
+            <LivePost key={p.id} initial={p} />
+          ))}
+
+          {/* 空状態 */}
+          {!loading && posts.length === 0 && (
+            <div className="empty-state">
+              <p className="empty-state-title">まだ投稿がありません</p>
+              <p className="empty-state-subtitle">最初の投稿をしてみましょう！</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </ThreeColumnLayout>
   );
 }
 

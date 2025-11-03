@@ -1,2 +1,750 @@
-body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* X風カラーパレット */
+  --bg-primary: #000000;
+  --bg-secondary: #16181C;
+  --bg-hover: #1C1F23;
+  --text-primary: #E7E9EA;
+  --text-secondary: #71767B;
+  --border-color: #2F3336;
+  --accent-blue: #1D9BF0;
+  --accent-blue-hover: #1A8CD8;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* スクロールバーのスタイル（Webkit系ブラウザ） */
+::-webkit-scrollbar {
+  width: 12px;
+  background-color: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 6px;
+  border: 3px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary);
+}
+
+/* リンクのデフォルトスタイル */
+a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ボタンのリセット */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* === レイアウトクラス === */
+
+/* 3カラムレイアウト */
+.three-column-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.three-column-layout main {
+  flex: 1;
+  max-width: 600px;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+}
+
+/* サイドバー共通 */
+.sidebar {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  padding: 0.5rem 1rem;
+}
+
+/* 左サイドバー */
+.sidebar-left {
+  width: 275px;
+  border-right: 1px solid var(--border-color);
+}
+
+/* 右サイドバー */
+.sidebar-right {
+  width: 350px;
+}
+
+/* レスポンシブ: lg以上で左サイドバー表示 */
+@media (min-width: 1024px) {
+  .sidebar-left {
+    display: flex;
+  }
+}
+
+/* レスポンシブ: xl以上で右サイドバー表示 */
+@media (min-width: 1280px) {
+  .sidebar-right {
+    display: flex;
+  }
+}
+
+/* === ユーティリティクラス === */
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-1 {
+  gap: 0.25rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-3 {
+  gap: 0.75rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+/* === ナビゲーションメニュー === */
+
+.nav-menu {
+  flex: 1;
+}
+
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  transition: background-color 0.2s;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-hover);
+}
+
+.nav-item.active {
+  font-weight: bold;
+}
+
+.post-button {
+  width: 100%;
+  margin-top: 1rem;
+  background-color: var(--accent-blue);
+  color: white;
+  font-weight: bold;
+  padding: 0.75rem;
+  border-radius: 9999px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.post-button:hover {
+  background-color: var(--accent-blue-hover);
+}
+
+/* === ユーザープロフィール === */
+
+.user-profile {
+  margin-top: auto;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.user-profile:hover {
+  background-color: var(--bg-hover);
+}
+
+.user-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* === 検索ボックス === */
+
+.search-box {
+  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+}
+
+.search-input-wrapper {
+  background-color: var(--bg-secondary);
+  border-radius: 9999px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-input {
+  background: transparent;
+  outline: none;
+  color: var(--text-primary);
+  border: none;
+  flex: 1;
+  font-size: 15px;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* === カードセクション === */
+
+.section-card {
+  background-color: var(--bg-secondary);
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.section-item {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.section-item:hover {
+  background-color: var(--bg-hover);
+}
+
+.show-more-btn {
+  margin-top: 0.75rem;
+  color: var(--accent-blue);
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.show-more-btn:hover {
+  text-decoration: underline;
+}
+
+/* === タイムラインページ === */
+
+.timeline-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.icon-button {
+  padding: 0.5rem;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  color: var(--accent-blue);
+  transition: background-color 0.2s;
+}
+
+.icon-button:hover {
+  background-color: var(--bg-hover);
+}
+
+.new-post-area {
+  height: 30vh;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .new-post-area {
+    padding: 0 1rem;
+  }
+}
+
+.existing-posts-area {
+  height: 70vh;
+  overflow-y: auto;
+  padding: 0 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .existing-posts-area {
+    padding: 0 1rem;
+  }
+}
+
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.error-message {
+  background-color: #200005;
+  border: 1px solid rgba(244, 33, 46, 0.5);
+  color: #F4212E;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-state-title {
+  font-size: 1.125rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* === ロゴ === */
+
+.logo-container {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.logo-circle {
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--accent-blue);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* === トレンド・おすすめユーザー === */
+
+.trend-item,
+.user-recommendation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.trend-item:hover,
+.user-recommendation:hover {
+  background-color: var(--bg-hover);
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.follow-button {
+  background-color: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 0.375rem 1rem;
+  border-radius: 9999px;
+  border: none;
+  font-weight: bold;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.follow-button:hover {
+  background-color: var(--text-secondary);
+}
+
+/* === フッター === */
+
+.footer-links {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+.copyright {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* === PostCard === */
+
+.post-card {
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background-color: var(--bg-secondary);
+  margin: 0.5rem 0;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.post-card:hover {
+  background-color: var(--bg-hover);
+  border-color: rgba(113, 118, 123, 0.3);
+}
+
+.post-content {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.post-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.post-text {
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  line-height: normal;
+  margin-bottom: 0.75rem;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  max-width: 28rem;
+  margin-left: -0.5rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.action-button .action-icon {
+  padding: 0.5rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+}
+
+.action-button:hover {
+  color: var(--accent-blue);
+}
+
+.action-button:hover .action-icon {
+  background-color: rgba(29, 155, 240, 0.1);
+}
+
+.action-button.retweet:hover {
+  color: #00ba7c;
+}
+
+.action-button.retweet:hover .action-icon {
+  background-color: rgba(0, 186, 124, 0.1);
+}
+
+.action-button.like:hover {
+  color: #f91880;
+}
+
+.action-button.like:hover .action-icon {
+  background-color: rgba(249, 24, 128, 0.1);
+}
+
+.replies-section {
+  margin-top: 0.75rem;
+  margin-left: 52px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+}
+
+.reply-item {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.reply-item:last-child {
+  margin-bottom: 0;
+}
+
+/* === PostComposer === */
+
+.post-composer {
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background-color: var(--bg-secondary);
+  margin: 0.5rem 0;
+  padding: 1rem;
+}
+
+.composer-content {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.composer-textarea {
+  width: 100%;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  border: none;
+  outline: none;
+  resize: none;
+}
+
+.composer-textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.composer-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.composer-icon-btn {
+  padding: 0.5rem;
+  color: var(--accent-blue);
+  background: none;
+  border: none;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+}
+
+.composer-icon-btn:hover:not(:disabled) {
+  background-color: rgba(29, 155, 240, 0.1);
+}
+
+.char-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.char-counter-text {
+  font-size: 0.875rem;
+}
+
+.char-counter-text.normal {
+  color: var(--text-secondary);
+}
+
+.char-counter-text.over {
+  color: #f4212e;
+}
+
+.submit-button {
+  padding: 0.375rem 1rem;
+  background-color: var(--accent-blue);
+  color: white;
+  border-radius: 9999px;
+  border: none;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: var(--accent-blue-hover);
+}
+
+.submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.composer-error {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #f4212e;
+}
+
+/* Color utilities */
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-white {
+  color: white;
+}
+
+/* === Avatar === */
+
+.avatar {
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: 1rem;
+}
+
+.avatar-md {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.25rem;
+}
+
+.avatar-lg {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+}
