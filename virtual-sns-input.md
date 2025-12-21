@@ -91,12 +91,12 @@ MVPで実装すべき最小限の機能:
 主要な処理（投稿→AI返信→リアルタイム通知）のデータフロー:
 
 1. ユーザーがフロントエンドで投稿を作成
-2. POST /api/posts でバックエンドに送信、DBに保存
-3. 投稿保存後、バックエンドがCeleryタスク（generate_ai_replies）をキューに投入
+2. POST /posts でバックエンドに送信、DBに保存
+3. 投稿保存後、バックエンドがCeleryタスク（generate_reply）をキューに投入
 4. Celery Workerが非同期でOpenAI APIを呼び出し、3つのペルソナからAI返信を生成
 5. 生成された各返信が POST /internal/replies でバックエンドに送信され、DBに保存
 6. 返信保存時、Redis Pub/Subで "reply_added" イベントを発行
-7. バックエンドSSEエンドポイント（GET /sse）がRedisからイベントを受信
+7. バックエンドSSEエンドポイント（GET /stream）がRedisからイベントを受信
 8. SSE経由でフロントエンドにリアルタイム配信
 9. フロントエンドがCustomEventを使ってUI（タイムライン）を即座に更新
 
@@ -156,7 +156,7 @@ MVPで実装すべき最小限の機能:
 
 #### 投稿（Posts）
 
-- `GET /api/posts?limit=20&offset=0` - 投稿一覧取得（返信を含む、新しい順）
+- `GET /posts?limit=20&offset=0` - 投稿一覧取得（返信を含む、新しい順）
   - Query Params:
     - `limit` (デフォルト: 20) - 取得件数
     - `offset` (デフォルト: 0) - オフセット
@@ -183,7 +183,7 @@ MVPで実装すべき最小限の機能:
     }
     ```
 
-- `POST /api/posts` - 新規投稿作成
+- `POST /posts` - 新規投稿作成
   - Body:
     ```json
     {
@@ -200,7 +200,7 @@ MVPで実装すべき最小限の機能:
     }
     ```
 
-- `GET /api/posts/{post_id}` - 特定投稿取得（返信を含む）
+- `GET /posts/{post_id}` - 特定投稿取得（返信を含む）※未実装
   - Response:
     ```json
     {
@@ -213,7 +213,7 @@ MVPで実装すべき最小限の機能:
 
 #### SSE（リアルタイム通知）
 
-- `GET /sse` - リアルタイム通知受信（Server-Sent Events）
+- `GET /stream` - リアルタイム通知受信（Server-Sent Events）
   - Response: text/event-stream 形式
   - イベント例:
     ```
@@ -247,7 +247,7 @@ MVPで実装すべき最小限の機能:
 ### 認証・認可
 
 - **認証方式**:
-  - 一般API（/api/*）: 認証なし（MVPのため）
+  - 一般API（/posts, /health など）: 認証なし（MVPのため）
   - 内部API（/internal/*）: `X-Internal-Secret` ヘッダーでシークレットキー検証
 - **認可ルール**:
   - 一般API: 全てのユーザーがアクセス可能
@@ -345,8 +345,8 @@ MVPで実装すべき最小限の機能:
 
 - **初期ロード時間**: 2秒以内（Viteの高速ビルドにより達成）
 - **API応答時間**:
-  - GET /api/posts: 200ms以内
-  - POST /api/posts: 100ms以内（AI生成は非同期）
+  - GET /posts: 200ms以内
+  - POST /posts: 100ms以内（AI生成は非同期）
 - **AI返信生成時間**: 3-5秒（OpenAI API依存、ユーザー体験に影響なし）
 - **同時接続数**: 100まで対応（MVP想定）
 - **データベースクエリ**: 50ms以内
