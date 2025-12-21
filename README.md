@@ -229,6 +229,34 @@ virtual-sns-mvp/
 └── docker-compose.yml
 ```
 
+### 各ディレクトリの役割
+
+- **backend/**: FastAPIバックエンドアプリケーション（REST API、SSE、Celery連携）
+  - **app/api/**: APIエンドポイント定義、依存性注入、SSE実装
+  - **app/core/**: 設定管理、環境変数読み込み
+  - **app/db/**: データベースセッション管理、Base定義
+  - **app/models/**: SQLAlchemy ORMモデル（Post, Reply）
+  - **app/repository/**: データアクセス層（CRUD操作）
+  - **app/schemas/**: Pydanticスキーマ（リクエスト/レスポンス）
+  - **app/services/**: ビジネスロジック（AIペルソナ、Redis Pub/Sub、SSE管理）
+  - **app/workers/**: Celeryタスク定義（AI返信生成）
+- **frontend/**: React + TypeScript フロントエンドアプリケーション（X風UI）
+  - **src/api/**: Axiosクライアント、API呼び出し関数
+  - **src/app/**: エントリーポイント、ルーティング設定
+  - **src/components/**: 再利用可能なUIコンポーネント
+  - **src/constants/**: 定数定義（ペルソナ情報など）
+  - **src/features/**: 機能別のカスタムフック（投稿、返信）
+  - **src/hooks/**: 共通カスタムフック（SSE、ポーリング）
+  - **src/layouts/**: レイアウトコンポーネント（3カラムレイアウト）
+  - **src/pages/**: ページコンポーネント（タイムライン、設定）
+  - **src/styles/**: グローバルスタイル（CSS Variables）
+  - **src/types/**: TypeScript型定義
+  - **src/utils/**: ユーティリティ関数（日付フォーマットなど）
+- **docs/**: プロジェクトのドキュメント
+  - **architecture.md**: システムアーキテクチャ詳細
+  - **features.md**: 機能一覧と今後の拡張予定
+  - **AI返信機能.md**: AI返信機能の仕様
+
 ## API エンドポイント
 
 ### 投稿関連
